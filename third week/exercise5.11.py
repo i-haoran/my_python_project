@@ -46,12 +46,12 @@ def log(func):
 
 @repeat(3)
 @log
-def mul(a, b):
+def add(a, b):
     """加法函数，返回两数之和"""
     return a * b
 
 
-result = mul(5, 3)
+result = add(5, 3)
 print(f"最终结果: {result}")
-print(f"函数名: {mul.__name__}")
-print(f"文档: {mul.__doc__}")
+print(f"函数名: {add.__name__}")
+print(f"文档: {add.__doc__}")
