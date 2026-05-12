@@ -1,0 +1,5 @@
+timestamp,user_id,action,amount
+2026-05-21 10:00:00,u001,login,0
+2026-05-21 10:01:00,u001,purchase,299
+2026-05-21 10:02:00,u002,login,0
+2026-05-21 10:03:00,u002,purchase,1299
