@@ -1,5 +1,6 @@
 from aiohttp import web
 
+
 async def ws_handler(request):
     ws = web.WebSocketResponse()
     await ws.prepare(request)
@@ -8,6 +9,7 @@ async def ws_handler(request):
             await ws.send_str(f"Echo: {msg.data}")
     return ws
 
+
 app = web.Application()
-app.router.add_get('/ws', ws_handler)
+app.router.add_get("/ws", ws_handler)
 web.run_app(app, port=8080)
