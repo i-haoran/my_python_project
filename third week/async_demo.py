@@ -2,6 +2,7 @@ import asyncio
 import httpx
 from aiohttp import web, ClientSession
 
+
 # ============================================================
 # 1. async/await 基础
 # ============================================================
@@ -9,10 +10,12 @@ async def mock_task(name, delay):
     await asyncio.sleep(delay)
     return f"{name} 完成"
 
+
 # ============================================================
 # 2. 并发执行 + Semaphore 限流 + async with
 # ============================================================
 sem = asyncio.Semaphore(3)
+
 
 async def fetch_one(client, url, i):
     async with sem:
@@ -21,6 +24,7 @@ async def fetch_one(client, url, i):
         data = resp.json()
         print(f"  [{i}] 完成: 状态码 {resp.status_code}")
         return data
+
 
 async def demo_concurrent():
     print("\n=== 并发请求（最多3个同时） ===")
@@ -35,6 +39,7 @@ async def demo_concurrent():
         tasks = [fetch_one(client, url, i) for i, url in enumerate(urls)]
         results = await asyncio.gather(*tasks)
         print(f"共完成 {len(results)} 个请求")
+
 
 # ============================================================
 # 3. WebSocket 服务端
@@ -51,6 +56,7 @@ async def ws_handler(request):
             break
     print("  [WS] 客户端断开")
     return ws
+
 
 # ============================================================
 # 4. WebSocket 客户端
@@ -79,6 +85,7 @@ async def demo_websocket():
 
     await runner.cleanup()
 
+
 # ============================================================
 # 主函数
 # ============================================================
@@ -98,5 +105,6 @@ async def main():
 
     print("\n" + "=" * 50)
     print("全部完成")
+
 
 asyncio.run(main())
