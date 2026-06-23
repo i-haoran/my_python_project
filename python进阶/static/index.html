@@ -3,25 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastAPI + 前端</title>
+    <title>用户列表</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-        h1 { color: #333; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
-        #result { margin-top: 20px; font-size: 18px; color: #007bff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        h1 { font-size: 22px; margin-bottom: 20px; }
+        .filters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: end; }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-group label { font-size: 13px; color: #666; }
+        .filter-group input, .filter-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .filter-group input:focus, .filter-group select:focus { outline: none; border-color: #007bff; }
+        .btn { padding: 8px 20px; background: #007bff; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .table th, .table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee; }
+        .table th { color: #666; font-size: 13px; }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 20px; }
+        .pagination span { font-size: 14px; color: #666; }
+        .empty { text-align: center; color: #999; padding: 40px 0; }
+        .loading { text-align: center; color: #999; padding: 40px 0; }
     </style>
 </head>
 <body>
-    <h1>前后端连接演示</h1>
-    <button onclick="callApi()">调用 API</button>
-    <div id="result"></div>
+    <div class="container">
+        <h1>用户管理</h1>
+        <div class="filters">
+            <div class="filter-group">
+                <label>姓名</label>
+                <input type="text" id="name" placeholder="输入姓名">
+            </div>
+            <div class="filter-group">
+                <label>最小年龄</label>
+                <input type="number" id="minAge" value="0" min="0">
+            </div>
+            <div class="filter-group">
+                <label>每页条数</label>
+                <select id="limit">
+                    <option value="2">2</option>
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <button class="btn" onclick="search(1)">查询</button>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>姓名</th>
+                    <th>年龄</th>
+                </tr>
+            </thead>
+            <tbody id="userList">
+                <tr><td colspan="3" class="loading">加载中...</td></tr>
+            </tbody>
+        </table>
+
+        <div class="pagination" id="pagination"></div>
+    </div>
 
     <script>
-        async function callApi() {
-            const res = await fetch('/api/hello');
+        async function search(page) {
+            const name = document.getElementById('name').value.trim();
+            const minAge = document.getElementById('minAge').value;
+            const limit = document.getElementById('limit').value;
+
+            let url = `/users?page=${page}&limit=${limit}&min_age=${minAge}`;
+            if (name) url += `&name=${encodeURIComponent(name)}`;
+
+            const tbody = document.getElementById('userList');
+            tbody.innerHTML = '<tr><td colspan="3" class="loading">加载中...</td></tr>';
+
+            const res = await fetch(url);
             const data = await res.json();
-            document.getElementById('result').textContent = data.message;
+
+            if (data.users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="empty">暂无数据</td></tr>';
+            } else {
+                tbody.innerHTML = data.users.map(u =>
+                    `<tr><td>${u.id}</td><td>${u.name}</td><td>${u.age}</td></tr>`
+                ).join('');
+            }
+
+            const totalPages = Math.ceil(data.total / data.limit);
+            const page = data.page;
+            document.getElementById('pagination').innerHTML = `
+                <button class="btn" onclick="search(${page - 1})" ${page <= 1 ? 'disabled' : ''}>上一页</button>
+                <span>第 ${page}/${totalPages} 页（共 ${data.total} 条）</span>
+                <button class="btn" onclick="search(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>下一页</button>
+            `;
         }
+
+        search(1);
     </script>
 </body>
 </html>
